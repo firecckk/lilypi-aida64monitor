@@ -1,5 +1,5 @@
 #include "Sys_task.h"
-#define MAX_TASKS_NUM 8
+#define MAX_TASKS_NUM 3
 #define NONE ((sys_task_t *)0)
 sys_task_t * taskList[MAX_TASKS_NUM];
 
@@ -20,7 +20,16 @@ void sys_task_handle()
             // if on time, execute
             if (taskList[i]->millis < millis())
             {
+                int time_start = millis();
                 sys_task_trigered(&taskList[i]);
+                int time_end = millis();
+                if(time_end-time_start>1000) {
+                    Serial.print("task ");
+                    Serial.print(i);
+                    Serial.print(": ");
+                    Serial.print(time_end-time_start);
+                    Serial.println("ms");
+                }
             }
         }
     }

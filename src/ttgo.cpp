@@ -1,6 +1,4 @@
 #include "config.h"
-#include "lv_demo_widgets.h"
-#include "lv.h"
 
 TTGOClass *ttgo;
 
@@ -58,7 +56,7 @@ void ttgo_setup()
         ttgo->tft->setCursor(0, 0);
         ttgo->tft->setTextColor(TFT_RED);
         ttgo->tft->println("SDCARD MOUNT FAILED");
-        delay(3000);
+        delay(1000);
     } else {
         Serial.println("SDCARD MOUNT SUCCESS");
     }
@@ -71,12 +69,10 @@ void ttgo_setup()
         ttgo->tft->setCursor(0, 0);
         ttgo->tft->setTextColor(TFT_RED);
         ttgo->tft->println("RTC CHECK FAILED");
-        delay(5000);
+        delay(3000);
     }
 
     ttgo->tft->setRotation(3);
-    //lv_demo_widgets();
-    //lv_create();
 
 }
 

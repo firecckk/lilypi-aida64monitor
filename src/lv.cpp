@@ -1,17 +1,18 @@
 #include "lvgl/lvgl.h"
 
-
-static void tab1_create(lv_obj_t * parent);
-static void tab2_create(lv_obj_t * parent);
-
 static lv_obj_t *tv;
 static lv_obj_t *t1;
 static lv_obj_t *t2;
 static lv_obj_t *t3;
 static lv_obj_t *gauge_cpu_usage;
 static lv_obj_t *lmeter_ram_usage;
+static lv_obj_t *label_ram_usage;
 
 static lv_style_t style_box;
+
+static void tab1_create(lv_obj_t * parent);
+static void tab2_create(lv_obj_t * parent);
+static void tab3_create(lv_obj_t * parent);
 
 void lv_create() {
 
@@ -32,6 +33,7 @@ void lv_create() {
 
     tab1_create(t1);
     tab2_create(t2);
+    tab3_create(t3);
 }
 
 
@@ -109,9 +111,11 @@ static void tab2_create(lv_obj_t * parent) {
     lv_obj_add_style(lmeter_ram_usage, LV_LINEMETER_PART_MAIN, &style_box);
     lv_obj_set_style_local_value_str(lmeter_ram_usage, LV_LINEMETER_PART_MAIN, LV_STATE_DEFAULT, "RAM usage");
 
-    lv_obj_t *label2 = lv_label_create(lmeter_ram_usage, NULL);
-    lv_obj_align(label2, lmeter_ram_usage, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_style_local_text_font(label2, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_theme_get_font_title());
+    label_ram_usage = lv_label_create(lmeter_ram_usage, NULL);
+    lv_obj_align(label_ram_usage, lmeter_ram_usage, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_set_style_local_text_font(label_ram_usage, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, lv_theme_get_font_title());
+
+    //lv_img_set_src(img, "S:png/");
 
 }
 
@@ -121,4 +125,90 @@ void lv_set_cpu_usage(uint16_t num) {
 
 void lv_set_ram_usage(uint16_t num) {
     lv_linemeter_set_value(lmeter_ram_usage, num);
+    lv_label_set_text_fmt(label_ram_usage, "%d", num);
 }
+
+
+static void list_btn_event_handler(lv_obj_t * btn, lv_event_t event){
+    // empty
+}
+
+static void tab3_create(lv_obj_t * parent)
+{
+    lv_coord_t hres = lv_disp_get_hor_res(NULL);
+
+    static lv_style_t style_page;
+    lv_style_init(&style_page);
+
+    lv_style_set_bg_opa(&style_page, LV_STATE_DEFAULT, LV_OPA_100);
+    lv_style_set_pad_top(&style_page, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_bottom(&style_page, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_left(&style_page, LV_STATE_DEFAULT, 5);
+    lv_style_set_pad_right(&style_page, LV_STATE_DEFAULT, 5);
+
+    lv_obj_add_style(parent, LV_PAGE_PART_BG, &style_page);
+    lv_obj_add_style(parent, LV_PAGE_PART_SCROLLABLE, &style_page);
+
+    lv_page_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
+
+    /*Create styles for the buttons*/
+    static lv_style_t style_btn;
+    lv_style_init(&style_btn);
+
+    lv_style_set_bg_color(&style_btn, LV_BTN_STATE_RELEASED, lv_color_hex3(0x333));
+    lv_style_set_bg_grad_color(&style_btn, LV_BTN_STATE_RELEASED, LV_COLOR_BLACK);
+    lv_style_set_border_color(&style_btn, LV_BTN_STATE_RELEASED, LV_COLOR_SILVER);
+    lv_style_set_border_width(&style_btn, LV_BTN_STATE_RELEASED, 1);
+    lv_style_set_border_opa(&style_btn, LV_BTN_STATE_RELEASED, LV_OPA_50);
+    lv_style_set_radius(&style_btn, LV_BTN_STATE_RELEASED, 0);
+
+    lv_style_set_bg_color(&style_btn, LV_BTN_STATE_PRESSED, lv_color_make(0x55, 0x96, 0xd8));
+    lv_style_set_bg_grad_color(&style_btn, LV_BTN_STATE_PRESSED, lv_color_make(0x37, 0x62, 0x90));
+    lv_style_set_text_color(&style_btn, LV_BTN_STATE_PRESSED, lv_color_make(0xbb, 0xd5, 0xf1));
+
+    lv_obj_t * list = lv_list_create(parent, NULL);
+    lv_obj_set_height(list, 2 * lv_obj_get_height(parent) / 3);
+
+    static lv_style_t style_list;
+    lv_style_init(&style_list);
+    lv_style_set_bg_opa(&style_list, LV_STATE_DEFAULT, LV_OPA_100);
+    lv_style_set_pad_left(&style_list, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_right(&style_list, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_top(&style_list, LV_STATE_DEFAULT, 0);
+    lv_style_set_pad_bottom(&style_list, LV_STATE_DEFAULT, 0);
+
+    lv_obj_add_style(list, LV_LIST_PART_BG, &style_list);
+    lv_obj_add_style(list, LV_LIST_PART_SCROLLABLE, &style_list);
+
+    lv_obj_align(list, NULL, LV_ALIGN_IN_TOP_MID, 0, LV_DPI / 4);
+
+    lv_obj_t * list_btn;
+    list_btn = lv_list_add_btn(list, LV_SYMBOL_FILE, "New");
+    lv_obj_set_event_cb(list_btn, list_btn_event_handler);
+
+    list_btn = lv_list_add_btn(list, LV_SYMBOL_DIRECTORY, "Open");
+    lv_obj_set_event_cb(list_btn, list_btn_event_handler);
+
+    list_btn = lv_list_add_btn(list, LV_SYMBOL_TRASH, "Delete");
+    lv_obj_set_event_cb(list_btn, list_btn_event_handler);
+
+    list_btn = lv_list_add_btn(list, LV_SYMBOL_EDIT, "Edit");
+    lv_obj_set_event_cb(list_btn, list_btn_event_handler);
+
+    list_btn = lv_list_add_btn(list, LV_SYMBOL_SAVE, "Save");
+    lv_obj_set_event_cb(list_btn, list_btn_event_handler);
+
+    list_btn = lv_list_add_btn(list, LV_SYMBOL_WIFI, "WiFi");
+    lv_obj_set_event_cb(list_btn, list_btn_event_handler);
+
+    list_btn = lv_list_add_btn(list, LV_SYMBOL_GPS, "GPS");
+    lv_obj_set_event_cb(list_btn, list_btn_event_handler);
+
+    lv_obj_t * mbox = lv_msgbox_create(parent, NULL);
+    lv_msgbox_set_text(mbox, "Click a button to copy its text to the Text area ");
+    lv_obj_set_width(mbox, hres - LV_DPI);
+    static const char * mbox_btns[] = {"Got it", ""};
+    lv_msgbox_add_btns(mbox, mbox_btns);    /*The default action is close*/
+    lv_obj_align(mbox, parent, LV_ALIGN_IN_TOP_MID, 0, LV_DPI / 2);
+}
+
